@@ -16,8 +16,6 @@ export const Products = () => {
   const [showForm, setShowForm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [cachedData, setCachedData] = useState([]);
-
-  // const getProducts = useCallback(async () => {
   //   const data = await getDocs(productsCollections);
   //   let productsData = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
   //   setOriginalProducts(productsData);
@@ -48,86 +46,51 @@ export const Products = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (cachedData.length === 0) {
-        const data = await getDocs(productsCollections);
-        const productsData = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-        setCachedData(productsData);
-        setOriginalProducts(productsData);
-        setProducts(productsData);
-      } else {
-        setOriginalProducts(cachedData);
-        setProducts(cachedData);
+      try {
+        if (cachedData.length === 0) {
+          const data = await getDocs(productsCollections);
+          const productsData = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+          setCachedData(productsData);
+          setOriginalProducts(productsData);
+        }
+
+        let sortedProducts = [...cachedData];
+
+        if (sortOption === "default") {
+          sortedProducts.sort((a, b) => {
+            if (a.state === "Disponible" && b.state !== "Disponible") {
+              return -1;
+            } else if (a.state !== "Disponible" && b.state === "Disponible") {
+              return 1;
+            } else {
+              return 0;
+            }
+          });
+        } else if (sortOption === "alphabetical") {
+          sortedProducts.sort((a, b) => a.title.localeCompare(b.title));
+        } else if (sortOption === "priceMenor") {
+          sortedProducts.sort((a, b) => a.price - b.price);
+        } else if (sortOption === "priceMayor") {
+          sortedProducts.sort((a, b) => b.price - a.price);
+        }
+
+        setProducts(sortedProducts);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching or sorting data:', error);
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     fetchData();
-  }, [cachedData, productsCollections]);
+  }, [cachedData, productsCollections, sortOption]);
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     await getProducts();
-  //   };
+  const handleSortChange = (e) => {
+    const newSortOption = e.target.value;
+    console.log('Selected sort option:', newSortOption); // Add this line
+    setSortOption(newSortOption);
+  };
 
-  //   fetchData();
-  // }, [getProducts]);
-
-  useEffect(() => {
-    setIsLoading(true);
-    let sortedProducts = [...originalProducts];
-
-    if (sortOption === "default") {
-      sortedProducts.sort((a, b) => {
-        if (a.state === "Disponible" && b.state !== "Disponible") {
-          return -1;
-        } else if (a.state !== "Disponible" && b.state === "Disponible") {
-          return 1;
-        } else {
-          return 0;
-        }
-      });
-    } else {
-      if (sortOption === "alphabetical") {
-        sortedProducts.sort((a, b) => {
-          const nameA = a.title.toLowerCase();
-          const nameB = b.title.toLowerCase();
-          return nameA.localeCompare(nameB);
-        });
-      } else if (sortOption === "priceMenor") {
-        sortedProducts.sort((a, b) => a.price - b.price);
-      } else if (sortOption === "priceMayor") {
-        sortedProducts.sort((a, b) => b.price - a.price);
-      }
-    }
-
-    setProducts(sortedProducts);
-    setIsLoading(false);
-  }, [originalProducts, sortOption]);
-
-  // const getUpdateProducts = async (id) => {
-  //   Swal.fire({
-  //     title: 'Confirmar Reserva',
-  //     html: `
-  //       <p>¿Está seguro de que desea reservar este producto?</p>
-  //       <input type="text" id="username" class="swal2-input" placeholder="Ingrese un alias">
-  //     `,
-  //     icon: 'warning',
-  //     showCancelButton: true,
-  //     confirmButtonText: 'Confirmar',
-  //     cancelButtonText: 'Cancelar',
-  //     preConfirm: async () => {
-  //       const username = Swal.getPopup().querySelector('#username').value;
-  //       if (!username) {
-  //         Swal.showValidationMessage('Por favor, ingrese un alias o nombre');
-  //       } else {
-  //         const productRef = await doc(productsCollections, id);
-  //         await updateDoc(productRef, { state: `Reservado por: ${username}` });
-  //         await getProducts();
-  //         Swal.fire('Reservado', `El producto ha sido reservado por ${username} con éxito`, 'success');
-  //       }
-  //     },
-  //   });
-  // };
 
   const getUpdateProducts = async (id) => {
     Swal.fire({
@@ -169,47 +132,6 @@ export const Products = () => {
     });
   };
 
-
-  const handleSortChange = (e) => {
-    setIsLoading(true);
-    const newSortOption = e.target.value;
-    setSortOption(newSortOption);
-  };
-
-  // const handleSortChange = (e) => {
-  //   setIsLoading(true);
-  //   const newSortOption = e.target.value;
-  //   setSortOption(newSortOption);
-  //   let sortedProducts = [...originalProducts];
-
-  //   if (newSortOption === "default") {
-  //     sortedProducts.sort((a, b) => {
-  //       if (a.state === "Disponible" && b.state !== "Disponible") {
-  //         return -1;
-  //       } else if (a.state !== "Disponible" && b.state === "Disponible") {
-  //         return 1;
-  //       } else {
-  //         return 0;
-  //       }
-  //     });
-
-  //     setProducts(sortedProducts);
-  //   } else {
-  //     if (newSortOption === "alphabetical") {
-  //       sortedProducts.sort((a, b) => {
-  //         const nameA = a.title.toLowerCase();
-  //         const nameB = b.title.toLowerCase();
-  //         return nameA.localeCompare(nameB);
-  //       });
-  //     } else if (newSortOption === "priceMenor") {
-  //       sortedProducts.sort((a, b) => a.price - b.price);
-  //     } else if (newSortOption === "priceMayor") {
-  //       sortedProducts.sort((a, b) => b.price - a.price);
-  //     }
-  //     setProducts(sortedProducts);
-  //   }
-  //   setIsLoading(false);
-  // }
 
   const handleShowFormClick = () => {
     Swal.fire({
