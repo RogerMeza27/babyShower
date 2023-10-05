@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Container, Row, Col, Tab } from "react-bootstrap";
 import { ProductCard } from "./ProductCard";
 import 'animate.css';
@@ -12,10 +12,28 @@ export const Products = () => {
   const [products, setProducts] = useState([]);
   const [originalProducts, setOriginalProducts] = useState([]);
   const [sortOption, setSortOption] = useState("default");
-  const productsCollections = collection(db, "products");
   const [showForm, setShowForm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [cachedData, setCachedData] = useState([]);
+  //   const data = await getDocs(productsCollections);
+  //   let productsData = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+  //   setOriginalProducts(productsData);
+
+  //   productsData.sort((a, b) => {
+  //     if (a.state === "Disponible" && b.state !== "Disponible") {
+  //       return -1;
+  //     } else if (a.state !== "Disponible" && b.state === "Disponible") {
+  //       return 1;
+  //     } else {
+  //       return 0;
+  //     }
+  //   });
+
+  //   setProducts(productsData);
+  //   setIsLoading(false);
+  // }, [productsCollections]);
+
+  const productsCollections = useMemo(() => collection(db, "products"), []);
 
   const createProduct = async (newProductData) => {
     try {
@@ -67,12 +85,14 @@ export const Products = () => {
     };
 
     fetchData();
-  }, [cachedData, productsCollections, sortOption]);
+  }, [cachedData, sortOption, productsCollections]);
 
   const handleSortChange = (e) => {
     const newSortOption = e.target.value;
+    console.log('Selected sort option:', newSortOption); // Add this line
     setSortOption(newSortOption);
   };
+
 
   const getUpdateProducts = async (id) => {
     Swal.fire({
@@ -113,6 +133,7 @@ export const Products = () => {
       },
     });
   };
+
 
   const handleShowFormClick = () => {
     Swal.fire({
