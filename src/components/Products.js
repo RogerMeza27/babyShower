@@ -16,7 +16,7 @@ export const Products = () => {
   const [showForm, setShowForm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [cachedData, setCachedData] = useState([]);
-  
+
   const createProduct = async (newProductData) => {
     try {
       const docRef = await addDoc(productsCollections, newProductData);
@@ -36,33 +36,34 @@ export const Products = () => {
           setCachedData(productsData);
           setOriginalProducts(productsData);
         }
-
-        let sortedProducts = [...cachedData];
-
-        if (sortOption === "default") {
-          sortedProducts.sort((a, b) => {
-            if (a.state === "Disponible" && b.state !== "Disponible") {
-              return -1;
-            } else if (a.state !== "Disponible" && b.state === "Disponible") {
-              return 1;
-            } else {
-              return 0;
-            }
-          });
-        } else if (sortOption === "alphabetical") {
-          sortedProducts.sort((a, b) => a.title.localeCompare(b.title));
-        } else if (sortOption === "priceMenor") {
-          sortedProducts.sort((a, b) => a.price - b.price);
-        } else if (sortOption === "priceMayor") {
-          sortedProducts.sort((a, b) => b.price - a.price);
-        }
-
-        setProducts(sortedProducts);
-        setIsLoading(false);
       } catch (error) {
-        console.error('Error fetching or sorting data:', error);
+        console.error('Error fetching data:', error);
         setIsLoading(false);
+        return;
       }
+
+      let sortedProducts = [...cachedData];
+
+      if (sortOption === "default") {
+        sortedProducts.sort((a, b) => {
+          if (a.state === "Disponible" && b.state !== "Disponible") {
+            return -1;
+          } else if (a.state !== "Disponible" && b.state === "Disponible") {
+            return 1;
+          } else {
+            return 0;
+          }
+        });
+      } else if (sortOption === "alphabetical") {
+        sortedProducts.sort((a, b) => a.title.localeCompare(b.title));
+      } else if (sortOption === "priceMenor") {
+        sortedProducts.sort((a, b) => a.price - b.price);
+      } else if (sortOption === "priceMayor") {
+        sortedProducts.sort((a, b) => b.price - a.price);
+      }
+
+      setProducts(sortedProducts);
+      setIsLoading(false);
     };
 
     fetchData();
@@ -70,10 +71,8 @@ export const Products = () => {
 
   const handleSortChange = (e) => {
     const newSortOption = e.target.value;
-    console.log('Selected sort option:', newSortOption); // Add this line
     setSortOption(newSortOption);
   };
-
 
   const getUpdateProducts = async (id) => {
     Swal.fire({
@@ -114,7 +113,6 @@ export const Products = () => {
       },
     });
   };
-
 
   const handleShowFormClick = () => {
     Swal.fire({
